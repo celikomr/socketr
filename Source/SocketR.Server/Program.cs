@@ -1,51 +1,52 @@
 ﻿using SocketR;
-using System.Net;
+using System.Net.Sockets;
 
+/// <summary>
+/// A program to demonstrate the usage of the TcpServer class for handling TCP connections.
+/// </summary>
 class Program
 {
+    /// <summary>
+    /// The entry point of the program.
+    /// </summary>
+    /// <param name="args">Command-line arguments.</param>
     static async Task Main(string[] args)
     {
         try
         {
-            // Sunucu için IP adresi ve port numarası
-            string ipAddress = "127.0.0.1"; // Localhost
-            int port = 12345;
+            // IP address and port number for the server
+            const string ipAddress = "127.0.0.1"; // Localhost
+            const int port = 12345;
 
-            // TCP sunucusunu oluştur
-            TcpServer tcpServer = new ();
+            // Create TCP server
+            TcpServer tcpServer = new();
 
-            // Client bağlantısı kurulduğunda gerçekleştirilecek işlem
-            //tcpServer.OnClientConnected(client =>
-            //{
-            //    Console.WriteLine($"Client connected: {client.Client.RemoteEndPoint}");
-            //});
+            // Chain the methods with the defined actions and functions
+            await tcpServer.OnClientConnected(onClientConnected)
+                           .OnDataReceived(onDataReceived)
+                           .StartAsync(ipAddress, port);
 
-            //// Veri alındığında gerçekleştirilecek işlem
-            //tcpServer.OnDataReceived(async data =>
-            //{
-            //    string receivedData = System.Text.Encoding.UTF8.GetString(data.Array, data.Offset, data.Count);
-            //    Console.WriteLine($"Data received: {receivedData}");
-
-            //    // Gelen veriyi işle ve bir yanıt oluştur
-            //    string response = $"Echo: {receivedData}";
-
-            //    // Yanıtı byte dizisine çevir
-            //    byte[] responseData = System.Text.Encoding.UTF8.GetBytes(response);
-
-            //    // İstemciye yanıtı gönder
-            //    await client.GetStream().WriteAsync(responseData, 0, responseData.Length);
-            //    Console.WriteLine($"Response sent: {response}");
-            //});
-
-            // Sunucuyu başlat
-            await tcpServer.StartAsync(ipAddress, port);
-
-            // Sunucuyu durdur
-            await tcpServer.StopAsync();
+            // Stop the server
+            // await tcpServer.StopAsync();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"An error occurred: {ex.Message}");
         }
     }
+
+    /// <summary>
+    /// Defines the action to be performed when a client connection is established.
+    /// </summary>
+    private static readonly Action<TcpClient> onClientConnected = client => Console.WriteLine($"Client connected: {client.Client.RemoteEndPoint}");
+
+    /// <summary>
+    /// Defines the function to handle received data.
+    /// </summary>
+    private static readonly Func<string, Task<string>> onDataReceived = async data =>
+    {
+        // Default function: Print the incoming string to the screen and return a success message
+        Console.WriteLine($"Data received: {data}");
+        return await Task.FromResult("Message received and processed successfully.");
+    };
 }
