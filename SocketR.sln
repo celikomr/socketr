@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocketR", "Source\SocketR\S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocketR.Server", "Source\SocketR.Server\SocketR.Server.csproj", "{B484B478-F4BA-4CF3-8A97-9233EA524D87}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocketR.Client", "Source\SocketR.Client\SocketR.Client.csproj", "{7672FC7D-CC3E-4E11-84D2-75587EF1A031}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{B484B478-F4BA-4CF3-8A97-9233EA524D87}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B484B478-F4BA-4CF3-8A97-9233EA524D87}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B484B478-F4BA-4CF3-8A97-9233EA524D87}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7672FC7D-CC3E-4E11-84D2-75587EF1A031}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7672FC7D-CC3E-4E11-84D2-75587EF1A031}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7672FC7D-CC3E-4E11-84D2-75587EF1A031}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7672FC7D-CC3E-4E11-84D2-75587EF1A031}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -34,6 +40,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{0968A672-53DF-46B4-9139-3EAF5B11545B} = {E567F6F8-843C-43C3-A5DF-BDEA3AA58B1A}
 		{B484B478-F4BA-4CF3-8A97-9233EA524D87} = {E567F6F8-843C-43C3-A5DF-BDEA3AA58B1A}
+		{7672FC7D-CC3E-4E11-84D2-75587EF1A031} = {E567F6F8-843C-43C3-A5DF-BDEA3AA58B1A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F5E073C7-D6B1-4B6C-90BC-DDBB45C07AF6}

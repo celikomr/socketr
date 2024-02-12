@@ -1,14 +1,13 @@
 ﻿using System.Net;
 using System.Net.Sockets;
-using System.Text;
 
 namespace SocketR;
 
 public class TcpServer : ITcpServer
 {
     private TcpListener? _listener;
-    private CancellationTokenSource _cancellationTokenSource;
-    private List<TcpClient> _connectedClients = new List<TcpClient>();
+    private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+    private readonly List<TcpClient> _connectedClients = new List<TcpClient>();
 
     private Action<TcpClient> _clientConnectedAction = client =>
     {
@@ -16,26 +15,19 @@ public class TcpServer : ITcpServer
         Console.WriteLine($"Client connected: {endPoint?.Address}:{endPoint?.Port}");
     };
 
-    private Func<ArraySegment<byte>, Task> _dataReceivedFunc = data =>
+    private Func<string, Task<string>> _dataReceivedFunc = data =>
     {
-        // Default function: Print the incoming byte array to the screen and return a success message
-        string receivedData = Encoding.UTF8.GetString(data.Array, data.Offset, data.Count);
-        Console.WriteLine($"Data received: {receivedData}");
-        return Task.CompletedTask;
+        // Default function: Print the incoming string to the screen and return a success message
+        Console.WriteLine($"Data received: {data}");
+        return Task.FromResult("Server received your message.");
     };
 
     private Action<Exception> _errorAction = error => Console.WriteLine($"Error: {error.Message}");
 
-    public TcpServer() => _cancellationTokenSource = new CancellationTokenSource();
-
     public void Dispose()
     {
         _cancellationTokenSource.Dispose();
-        if (_listener != null)
-        {
-            _listener.Stop();
-            _listener = null;
-        }
+        StopAsync().Wait();
     }
 
     public ITcpServer OnClientConnected(Action<TcpClient> clientConnectedAction)
@@ -44,7 +36,7 @@ public class TcpServer : ITcpServer
         return this;
     }
 
-    public ITcpServer OnDataReceived(Func<ArraySegment<byte>, Task> dataReceivedFunc)
+    public ITcpServer OnDataReceived(Func<string, Task<string>> dataReceivedFunc)
     {
         _dataReceivedFunc = dataReceivedFunc;
         return this;
@@ -68,10 +60,10 @@ public class TcpServer : ITcpServer
 
         while (!cancellationToken.IsCancellationRequested)
         {
-            var client = await _listener.AcceptTcpClientAsync(cancellationToken);
+            var client = await _listener.AcceptTcpClientAsync();
             _clientConnectedAction?.Invoke(client);
             _connectedClients.Add(client);
-            _ = Task.Run(async () => await ReceiveDataAsync(client, cancellationToken), cancellationToken);
+            _ = Task.Run(async () => await ReceiveDataAsync(client), cancellationToken);
         }
     }
 
@@ -85,27 +77,36 @@ public class TcpServer : ITcpServer
             _listener = null;
         }
 
+        foreach (var client in _connectedClients)
+        {
+            client.Close();
+        }
+        _connectedClients.Clear();
+
         Console.WriteLine("Server stopped.");
         return Task.CompletedTask;
     }
 
-    private async Task ReceiveDataAsync(TcpClient client, CancellationToken cancellationToken)
+    private async Task ReceiveDataAsync(TcpClient client)
     {
         try
         {
             var stream = client.GetStream();
-            var buffer = new byte[1024];
+            var reader = new StreamReader(new BufferedStream(stream));
+            var writer = new StreamWriter(new BufferedStream(stream)) { AutoFlush = true };
 
-            while (!cancellationToken.IsCancellationRequested)
+            while (!_cancellationTokenSource.Token.IsCancellationRequested)
             {
-                int bytesRead = await stream.ReadAsync(buffer, cancellationToken);
-                if (bytesRead == 0)
+                string? receivedData = await reader.ReadLineAsync();
+                if (string.IsNullOrEmpty(receivedData))
                 {
                     break;
                 }
 
-                var data = new ArraySegment<byte>(buffer, 0, bytesRead);
-                await _dataReceivedFunc.Invoke(data);
+                string responseData = await _dataReceivedFunc.Invoke(receivedData);
+                
+                // Send response to client
+                await writer.WriteLineAsync(responseData);
             }
         }
         catch (Exception ex)
