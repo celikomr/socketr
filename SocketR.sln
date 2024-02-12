@@ -3,9 +3,30 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34526.213
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{52BB7265-2F91-4CD2-9818-1806ED47D907}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source", "Source", "{E567F6F8-843C-43C3-A5DF-BDEA3AA58B1A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{9926EFF3-0F0C-4CE5-867A-FAB722EFCA03}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocketR", "Source\SocketR\SocketR.csproj", "{0968A672-53DF-46B4-9139-3EAF5B11545B}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0968A672-53DF-46B4-9139-3EAF5B11545B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0968A672-53DF-46B4-9139-3EAF5B11545B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0968A672-53DF-46B4-9139-3EAF5B11545B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0968A672-53DF-46B4-9139-3EAF5B11545B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0968A672-53DF-46B4-9139-3EAF5B11545B} = {E567F6F8-843C-43C3-A5DF-BDEA3AA58B1A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F5E073C7-D6B1-4B6C-90BC-DDBB45C07AF6}
