@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using System.Text;
 
 namespace SocketR;
 
@@ -7,13 +8,22 @@ public class TcpServer : ITcpServer
 {
     private TcpListener? _listener;
     private CancellationTokenSource _cancellationTokenSource;
-    private Func<ArraySegment<byte>, Task> _dataReceivedFunc;
-    private Action<Exception> _errorAction;
+
     private Action<TcpClient> _clientConnectedAction = client =>
     {
         IPEndPoint endPoint = (IPEndPoint)client.Client.RemoteEndPoint;
         Console.WriteLine($"Client connected: {endPoint?.Address}:{endPoint?.Port}");
     };
+
+    private Func<ArraySegment<byte>, Task> _dataReceivedFunc = data =>
+    {
+        // Default function: Print the incoming byte array to the screen and return a success message
+        string receivedData = Encoding.UTF8.GetString(data.Array, data.Offset, data.Count);
+        Console.WriteLine($"Data received: {receivedData}");
+        return Task.CompletedTask;
+    };
+
+    private Action<Exception> _errorAction = error => Console.WriteLine($"Error: {error.Message}");
 
     public TcpServer() => _cancellationTokenSource = new CancellationTokenSource();
 
@@ -41,7 +51,7 @@ public class TcpServer : ITcpServer
 
     public ITcpServer OnError(Action<Exception> errorAction)
     {
-        _errorAction = errorAction ?? (ex => Console.WriteLine($"Error: {ex.Message}"));
+        _errorAction = errorAction;
         return this;
     }
 
