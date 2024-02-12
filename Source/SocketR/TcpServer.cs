@@ -1,4 +1,5 @@
-﻿using System.Net.Sockets;
+﻿using System.Net;
+using System.Net.Sockets;
 
 namespace SocketR;
 
@@ -6,9 +7,13 @@ public class TcpServer : ITcpServer
 {
     private TcpListener? _listener;
     private CancellationTokenSource _cancellationTokenSource;
-    private Action<TcpClient> _clientConnectedAction;
     private Func<ArraySegment<byte>, Task> _dataReceivedFunc;
     private Action<Exception> _errorAction;
+    private Action<TcpClient> _clientConnectedAction = client =>
+    {
+        IPEndPoint endPoint = (IPEndPoint)client.Client.RemoteEndPoint;
+        Console.WriteLine($"Client connected: {endPoint?.Address}:{endPoint?.Port}");
+    };
 
     public TcpServer() => _cancellationTokenSource = new CancellationTokenSource();
 
@@ -24,31 +29,32 @@ public class TcpServer : ITcpServer
 
     public ITcpServer OnClientConnected(Action<TcpClient> clientConnectedAction)
     {
-        throw new NotImplementedException();
+        _clientConnectedAction = clientConnectedAction;
+        return this;
     }
 
     public ITcpServer OnDataReceived(Func<ArraySegment<byte>, Task> dataReceivedFunc)
     {
-        throw new NotImplementedException();
+        _dataReceivedFunc = dataReceivedFunc;
+        return this;
     }
 
     public ITcpServer OnError(Action<Exception> errorAction)
     {
-        throw new NotImplementedException();
+        _errorAction = errorAction ?? (ex => Console.WriteLine($"Error: {ex.Message}"));
+        return this;
     }
 
-    public Task StartAsync(string ipAddress, int port, CancellationToken cancellationToken = default)
+    public async Task StartAsync(string ipAddress, int port, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
-    }
+        if (_listener != null)
+            throw new InvalidOperationException("Server is already running.");
 
-    public Task StopAsync()
-    {
-        throw new NotImplementedException();
-    }
+        _listener = new TcpListener(IPAddress.Parse(ipAddress), port);
+        _listener.Start();
 
-    private async Task AcceptClientsAsync(CancellationToken cancellationToken)
-    {
+        Console.WriteLine($"Server started at {ipAddress}:{port}");
+
         while (!cancellationToken.IsCancellationRequested)
         {
             var client = await _listener.AcceptTcpClientAsync(cancellationToken);
@@ -56,6 +62,20 @@ public class TcpServer : ITcpServer
 
             _ = Task.Run(async () => await ReceiveDataAsync(client, cancellationToken), cancellationToken);
         }
+    }
+
+    public Task StopAsync()
+    {
+        _cancellationTokenSource.Cancel();
+
+        if (_listener != null)
+        {
+            _listener.Stop();
+            _listener = null;
+        }
+
+        Console.WriteLine("Server stopped.");
+        return Task.CompletedTask;
     }
 
     private async Task ReceiveDataAsync(TcpClient client, CancellationToken cancellationToken)
