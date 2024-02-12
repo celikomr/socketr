@@ -8,6 +8,7 @@ public class TcpServer : ITcpServer
 {
     private TcpListener? _listener;
     private CancellationTokenSource _cancellationTokenSource;
+    private List<TcpClient> _connectedClients = new List<TcpClient>();
 
     private Action<TcpClient> _clientConnectedAction = client =>
     {
@@ -69,7 +70,7 @@ public class TcpServer : ITcpServer
         {
             var client = await _listener.AcceptTcpClientAsync(cancellationToken);
             _clientConnectedAction?.Invoke(client);
-
+            _connectedClients.Add(client);
             _ = Task.Run(async () => await ReceiveDataAsync(client, cancellationToken), cancellationToken);
         }
     }
@@ -97,7 +98,7 @@ public class TcpServer : ITcpServer
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken);
+                int bytesRead = await stream.ReadAsync(buffer, cancellationToken);
                 if (bytesRead == 0)
                 {
                     break;
@@ -113,6 +114,7 @@ public class TcpServer : ITcpServer
         }
         finally
         {
+            _connectedClients.Remove(client);
             client.Close();
         }
     }
